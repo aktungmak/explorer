@@ -19,6 +19,8 @@ func (a *App) ParseCommand(line string) string {
 		return a.Help()
 	case hp(line, "link"):
 		return a.ShowLinks()
+	case hp(line, "body"):
+		return a.ShowBody()
 	case hp(line, "mark"):
 		if len(cmds) < 2 {
 			return "not enough args"
@@ -34,12 +36,10 @@ func (a *App) ParseCommand(line string) string {
 		if err != nil {
 			break
 		}
-
 		if 0 > int(i) || int(i) >= len(a.Links) {
 			return "no link with that index"
 		}
-        // TODO print a.Links as option menu
-		//a.Goto(a.Links[])
+		return a.Goto(a.Links[i])
 	}
 	return "didn't understand the command... try help"
 }

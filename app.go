@@ -4,21 +4,21 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/aktungmak/ccm-client"
-	"net/http"
 	"net/url"
 	"os"
 	"strings"
 )
 
 type App struct {
-	Root     *url.URL
-	Current  *url.URL
-	History  []*url.URL
-	Marks    map[string]*url.URL
-	Client   *ccm.Client
-	Links    map[string]*url.URL
-	Response *http.Response
-	Reader   *bufio.Reader // replace this with a readline implementation
+	Root       *url.URL
+	Current    *url.URL
+	History    []*url.URL
+	Marks      map[string]*url.URL
+	Client     *ccm.Client
+	Links      []*url.URL
+	LastBody   []byte
+	LastStatus string
+	Reader     *bufio.Reader // replace this with a readline implementation
 }
 
 func NewApp(servroot, user, pass string) (*App, error) {
@@ -45,14 +45,14 @@ func NewApp(servroot, user, pass string) (*App, error) {
 // format a string of the options and their indexes
 func (a *App) LinksString() string {
 	var ret string
-	for name, url := range a.Links {
-		ret += fmt.Sprintf("%s: %s\n", name, url)
+	for i, url := range a.Links {
+		ret += fmt.Sprintf("%d: %s\n", i, url)
 	}
 	return ret
 }
 
 func (a *App) EventLoop() {
-    a.Goto(a.Root)
+	a.Goto(a.Root)
 	for {
 		fmt.Println(a.LinksString())
 		text := a.getLine()
