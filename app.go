@@ -22,17 +22,19 @@ type App struct {
 }
 
 func NewApp(servroot, user, pass string) (*App, error) {
-	s, err := url.Parse(servroot)
+	sr, err := url.Parse(servroot)
 	if err != nil {
 		return &App{}, err
 	}
-	c, err := ccm.NewClient(s.Host, user, pass)
+
+	c, err := ccm.NewClient(sr.Host, user, pass)
 	if err != nil {
 		return &App{}, err
 	}
+
 	a := &App{
-		Root:    s,
-		Current: s,
+		Root:    sr,
+		Current: sr,
 		History: make([]*url.URL, 10),
 		Marks:   make(map[string]*url.URL),
 		Client:  c,
@@ -56,7 +58,7 @@ func (a *App) EventLoop() {
 	for {
 		fmt.Println(a.LinksString())
 		text := a.getLine()
-		if text == "quit" {
+		if text == "quit" || text == "exit" {
 			break
 		}
 		res := a.ParseCommand(text)

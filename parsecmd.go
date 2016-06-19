@@ -32,11 +32,12 @@ func (a *App) ParseCommand(line string) string {
 		}
 		return a.Jump(cmds[1])
 	default:
+        // by default assume it is a link index
 		i, err := strconv.ParseInt(cmds[0], 10, 0)
 		if err != nil {
 			break
 		}
-		if 0 > int(i) || int(i) >= len(a.Links) {
+		if int(i) < 0 || int(i) >= len(a.Links) {
 			return "no link with that index"
 		}
 		return a.Goto(a.Links[i])

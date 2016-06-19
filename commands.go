@@ -46,10 +46,10 @@ func (a *App) Goto(u *url.URL) string {
 	a.Current = u
 
 	// qualify the url with our service root
-	ru := a.Root.ResolveReference(u)
+	fullUrl := a.Root.ResolveReference(u)
 
 	// make the request
-	res, err := a.Client.DoRaw("GET", ru.String())
+	res, err := a.Client.DoRaw("GET", fullUrl.String())
 	if err != nil {
         a.LastStatus = "0 ERROR"
 		return err.Error()
@@ -65,17 +65,17 @@ func (a *App) Goto(u *url.URL) string {
 	}
 
 	// parse json response
-	var pdat map[string]interface{}
-	err = json.Unmarshal(a.LastBody, &pdat)
+	var pBody map[string]interface{}
+	err = json.Unmarshal(a.LastBody, &pBody)
 	if err != nil {
 		return "couldn't parse JSON response: " + err.Error()
 	}
 
 	// extract links - todo should perhaps specify the "Links" key?
-	lmap := ccm.ParseLinks(pdat, "")
-	a.Links = make([]*url.URL, len(lmap))
+	linkMap := ccm.ParseLinks(pBody, "")
+	a.Links = make([]*url.URL, len(linkMap))
 	i := 0
-	for _, v := range lmap {
+	for _, v := range linkMap {
 		a.Links[i] = v
 		i++
 	}
