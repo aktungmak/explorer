@@ -12,12 +12,19 @@ func (a *App) Back() string {
 	a.History = a.History[:len(a.History)-2]
 	return a.Goto(prev)
 }
+func (a *App) Dump(filename string) string {
+	err := ioutil.WriteFile(filename, []byte(a.LastBody), 0644)
+	if err != nil {
+		return "Error dumping body: " + err.Error()
+	}
+	return "successfully dumped body in " + filename
+}
+func (a *App) Help() string {
+	return __HELP_TEXT__
+}
 func (a *App) Home() string {
 	a.History = append(a.History, a.Root)
 	return a.Goto(a.Root)
-}
-func (a *App) Help() string {
-	return "one day this will be useful help"
 }
 func (a *App) ShowLinks() string {
 	return a.LinksString()
@@ -51,7 +58,7 @@ func (a *App) Goto(u *url.URL) string {
 	// make the request
 	res, err := a.Client.DoRaw("GET", fullUrl.String())
 	if err != nil {
-        a.LastStatus = "0 ERROR"
+		a.LastStatus = "0 ERROR"
 		return err.Error()
 	}
 	a.LastStatus = res.Status
@@ -60,7 +67,7 @@ func (a *App) Goto(u *url.URL) string {
 	defer res.Body.Close()
 	a.LastBody, err = ioutil.ReadAll(res.Body)
 	if err != nil {
-        a.LastBody = []byte{}
+		a.LastBody = []byte{}
 		return err.Error()
 	}
 
@@ -80,4 +87,9 @@ func (a *App) Goto(u *url.URL) string {
 		i++
 	}
 	return res.Status
+}
+
+func (a *App) Manual(method string, uri *url.URL, body []byte) string {
+
+	return "to be implemented"
 }
