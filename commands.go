@@ -10,7 +10,7 @@ import (
 func (a *App) Back() string {
 	prev := a.History[len(a.History)-2]
 	a.History = a.History[:len(a.History)-2]
-	return a.Goto(prev)
+	return a.Goto("GET", prev, nil)
 }
 func (a *App) Dump(filename string) string {
 	err := ioutil.WriteFile(filename, []byte(a.LastBody), 0644)
@@ -23,8 +23,7 @@ func (a *App) Help() string {
 	return __HELP_TEXT__
 }
 func (a *App) Home() string {
-	a.History = append(a.History, a.Root)
-	return a.Goto(a.Root)
+	return a.Goto("GET", a.Root, nil)
 }
 func (a *App) ShowLinks() string {
 	return a.LinksString()
@@ -41,13 +40,38 @@ func (a *App) Jump(name string) string {
 	if !ok {
 		return "no mark called " + name
 	}
-	return a.Goto(u)
+	return a.Goto("GET", u, nil)
+}
+
+func (a *App) Set(setting, value string) string {
+	switch setting {
+	case "body":
+		if value == "on" {
+			a.AutoBody = true
+			return "enabled auto printing of request body"
+		} else {
+			a.AutoBody = false
+			return "disabled auto printing of request body"
+		}
+	case "opts":
+		if value == "on" {
+			a.AutoOpts = true
+			return "enabled auto printing of link options"
+		} else {
+			a.AutoOpts = false
+			return "disabled auto printing of link options"
+		}
+	}
+	return "unknown option: " + value
 }
 
 // change to the (unqualified) url provided, even if it does
 // not exist yet. this allows us to make a POST from the new
 // location if needed.
-func (a *App) Goto(u *url.URL) string {
+func (a *App) Goto(method string, u *url.URL, body []byte) string {
+	if u == nil {
+		return "invalid URL"
+	}
 	// update app state
 	a.History = append(a.History, u)
 	a.Current = u
@@ -56,7 +80,7 @@ func (a *App) Goto(u *url.URL) string {
 	fullUrl := a.Root.ResolveReference(u)
 
 	// make the request
-	res, err := a.Client.DoRaw("GET", fullUrl.String())
+	res, err := a.Client.DoRaw(method, fullUrl.String(), body)
 	if err != nil {
 		a.LastStatus = "0 ERROR"
 		return err.Error()
@@ -87,9 +111,4 @@ func (a *App) Goto(u *url.URL) string {
 		i++
 	}
 	return res.Status
-}
-
-func (a *App) Manual(method string, uri *url.URL, body []byte) string {
-
-	return "to be implemented"
 }

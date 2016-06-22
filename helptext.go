@@ -21,7 +21,11 @@ jump <name>
 mark <name>
     save the current location as <name>
 man <method> <uri> <body>
-    send a custom request to <uri> using <method> and <body>
+    send a custom request to <uri> using <method> and optional <body>
 quit
     disconnect and end session
+set <body|opts> <on|off>
+    enable or disable automatic printing of the options or response body
+where
+    show the current location
 `

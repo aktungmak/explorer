@@ -3,11 +3,11 @@ package explorer
 import (
 	"encoding/json"
 	"io/ioutil"
-    "os"
+	"os"
 )
 
 func LoadConfig(filename string) (*App, error) {
-    a := &App{}
+	a := &App{}
 	file, err := os.Open(filename)
 	if err != nil {
 		return a, err
@@ -15,7 +15,7 @@ func LoadConfig(filename string) (*App, error) {
 
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&a)
-    return a, err
+	return a, err
 }
 
 func (a *App) SaveConfig(filename string) error {

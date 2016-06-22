@@ -19,6 +19,8 @@ type App struct {
 	LastBody   []byte
 	LastStatus string
 	Reader     *bufio.Reader // replace this with a readline implementation
+	AutoOpts   bool
+	AutoBody   bool
 }
 
 func NewApp(servroot, user, pass string) (*App, error) {
@@ -33,12 +35,14 @@ func NewApp(servroot, user, pass string) (*App, error) {
 	}
 
 	a := &App{
-		Root:    sr,
-		Current: sr,
-		History: make([]*url.URL, 10),
-		Marks:   make(map[string]*url.URL),
-		Client:  c,
-		Reader:  bufio.NewReader(os.Stdin),
+		Root:     sr,
+		Current:  sr,
+		History:  make([]*url.URL, 10),
+		Marks:    make(map[string]*url.URL),
+		Client:   c,
+		Reader:   bufio.NewReader(os.Stdin),
+		AutoOpts: true,
+		AutoBody: false,
 	}
 
 	return a, err
@@ -54,15 +58,20 @@ func (a *App) LinksString() string {
 }
 
 func (a *App) EventLoop() {
-	a.Goto(a.Root)
+	a.Goto("GET", a.Root, nil)
 	for {
-		fmt.Println(a.LinksString())
+		if a.AutoOpts {
+			fmt.Println(a.LinksString())
+		}
 		text := a.getLine()
 		if text == "quit" || text == "exit" {
 			break
 		}
 		res := a.ParseCommand(text)
 		fmt.Println("-> " + res)
+		if a.AutoBody {
+			fmt.Println(string(a.LastBody))
+		}
 	}
 }
 

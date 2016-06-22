@@ -29,7 +29,7 @@ func (a *App) ParseCommand(line string) string {
 		if err != nil {
 			return "that's not a valid uri: " + err.Error()
 		}
-		return a.Goto(u)
+		return a.Goto("GET", u, nil)
 
 	case hp(line, "help"):
 		return a.Help()
@@ -40,7 +40,7 @@ func (a *App) ParseCommand(line string) string {
 			return "Please specify the name to jump to"
 		}
 		return a.Jump(cmds[1])
-	case hp(line, "link"):
+	case hp(line, "opts"):
 		return a.ShowLinks()
 	case hp(line, "mark"):
 		if len(cmds) < 2 {
@@ -59,8 +59,14 @@ func (a *App) ParseCommand(line string) string {
 		if len(cmds) > 3 {
 			body = []byte(cmds[3])
 		}
-		return a.Manual(cmds[1], u, body)
-
+		return a.Goto(cmds[1], u, body)
+	case hp(line, "set"):
+		if len(cmds) < 3 {
+			return "must specify setting and on or off"
+		}
+		return a.Set(cmds[1], cmds[2])
+	case hp(line, "where"):
+		return a.Root.ResolveReference(a.Current).String()
 	default:
 		// by default assume it is a link index
 		i, err := strconv.ParseInt(cmds[0], 10, 0)
@@ -70,7 +76,7 @@ func (a *App) ParseCommand(line string) string {
 		if int(i) < 0 || int(i) >= len(a.Links) {
 			return "no link with index " + cmds[0]
 		}
-		return a.Goto(a.Links[i])
+		return a.Goto("GET", a.Links[i], nil)
 	}
 	return "didn't understand the command... try help"
 }
