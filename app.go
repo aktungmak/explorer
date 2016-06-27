@@ -1,12 +1,11 @@
 package explorer
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/aktungmak/ccm-client"
+    "github.com/chzyer/readline"
 	"net/url"
-	"os"
-	"strings"
+    "strings"
 )
 
 type App struct {
@@ -18,7 +17,8 @@ type App struct {
 	Links      []*url.URL
 	LastBody   []byte
 	LastStatus string
-	Reader     *bufio.Reader // replace this with a readline implementation
+	//Reader     *bufio.Reader
+	Reader     *readline.Instance
 	AutoOpts   bool
 	AutoBody   bool
 }
@@ -33,14 +33,21 @@ func NewApp(servroot, user, pass string) (*App, error) {
 	if err != nil {
 		return &App{}, err
 	}
-
+    rdr, err := readline.NewEx(&readline.Config{
+        Prompt: ": ",
+        AutoComplete: __completer,
+    })
+	if err != nil {
+		return &App{}, err
+	}
+    
 	a := &App{
 		Root:     sr,
 		Current:  sr,
 		History:  make([]*url.URL, 10),
 		Marks:    make(map[string]*url.URL),
 		Client:   c,
-		Reader:   bufio.NewReader(os.Stdin),
+		Reader:   rdr,
 		AutoOpts: true,
 		AutoBody: false,
 	}
@@ -58,12 +65,19 @@ func (a *App) LinksString() string {
 }
 
 func (a *App) EventLoop() {
+    defer a.Reader.Close()
 	a.Goto("GET", a.Root, nil)
 	for {
 		if a.AutoOpts {
 			fmt.Println(a.LinksString())
 		}
-		text := a.getLine()
+
+		text, err := a.Reader.Readline()
+        if err != nil {
+            fmt.Printf("Error reading command: %s\n", err)
+            break
+        }
+        text = strings.TrimSpace(text) 
 		if text == "quit" || text == "exit" {
 			break
 		}
@@ -75,14 +89,3 @@ func (a *App) EventLoop() {
 	}
 }
 
-// temporary function until I use readline
-func (a *App) getLine() string {
-	fmt.Print(": ")
-	text, err := a.Reader.ReadString('\n')
-	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		return ""
-	}
-	return strings.TrimSpace(text)
-
-}
