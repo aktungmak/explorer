@@ -2,7 +2,7 @@ package explorer
 
 import (
 	"encoding/json"
-	"github.com/aktungmak/ccm-client"
+	"github.com/aktungmak/odata-client"
 	"io/ioutil"
 	"net/url"
 )
@@ -72,9 +72,10 @@ func (a *App) Goto(method string, u *url.URL, body []byte) string {
 	if u == nil {
 		return "invalid URL"
 	}
-	// update app state
+	// update app state and clear old links
 	a.History = append(a.History, u)
 	a.Current = u
+	a.Links = make([]*url.URL, 0)
 
 	// qualify the url with our service root
 	fullUrl := a.Root.ResolveReference(u)
@@ -103,7 +104,7 @@ func (a *App) Goto(method string, u *url.URL, body []byte) string {
 	}
 
 	// extract links - todo should perhaps specify the "Links" key?
-	linkMap := ccm.ParseLinks(pBody, "")
+	linkMap := odata.ParseLinks(pBody, "")
 	a.Links = make([]*url.URL, len(linkMap))
 	i := 0
 	for _, v := range linkMap {

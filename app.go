@@ -2,10 +2,10 @@ package explorer
 
 import (
 	"fmt"
-	"github.com/aktungmak/ccm-client"
-    "github.com/chzyer/readline"
+	"github.com/aktungmak/odata-client"
+	"github.com/chzyer/readline"
 	"net/url"
-    "strings"
+	"strings"
 )
 
 type App struct {
@@ -13,11 +13,10 @@ type App struct {
 	Current    *url.URL
 	History    []*url.URL
 	Marks      map[string]*url.URL
-	Client     *ccm.Client
+	Client     *odata.Client
 	Links      []*url.URL
 	LastBody   []byte
 	LastStatus string
-	//Reader     *bufio.Reader
 	Reader     *readline.Instance
 	AutoOpts   bool
 	AutoBody   bool
@@ -29,18 +28,18 @@ func NewApp(servroot, user, pass string) (*App, error) {
 		return &App{}, err
 	}
 
-	c, err := ccm.NewClient(sr.Host, user, pass)
+	c, err := odata.NewClient(sr.Host, user, pass)
 	if err != nil {
 		return &App{}, err
 	}
-    rdr, err := readline.NewEx(&readline.Config{
-        Prompt: ": ",
-        AutoComplete: __completer,
-    })
+	rdr, err := readline.NewEx(&readline.Config{
+		Prompt:       ": ",
+		AutoComplete: __completer,
+	})
 	if err != nil {
 		return &App{}, err
 	}
-    
+
 	a := &App{
 		Root:     sr,
 		Current:  sr,
@@ -65,7 +64,7 @@ func (a *App) LinksString() string {
 }
 
 func (a *App) EventLoop() {
-    defer a.Reader.Close()
+	defer a.Reader.Close()
 	a.Goto("GET", a.Root, nil)
 	for {
 		if a.AutoOpts {
@@ -73,11 +72,11 @@ func (a *App) EventLoop() {
 		}
 
 		text, err := a.Reader.Readline()
-        if err != nil {
-            fmt.Printf("Error reading command: %s\n", err)
-            break
-        }
-        text = strings.TrimSpace(text) 
+		if err != nil {
+			fmt.Printf("Error reading command: %s\n", err)
+			break
+		}
+		text = strings.TrimSpace(text)
 		if text == "quit" || text == "exit" {
 			break
 		}
@@ -88,4 +87,3 @@ func (a *App) EventLoop() {
 		}
 	}
 }
-
