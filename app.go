@@ -14,7 +14,7 @@ type App struct {
 	History    []*url.URL
 	Marks      map[string]*url.URL
 	Client     *odata.Client
-	Links      []*url.URL
+	Links      UrlSlice
 	LastBody   []byte
 	LastStatus string
 	Reader     *readline.Instance
@@ -54,6 +54,13 @@ func NewApp(servroot, user, pass string) (*App, error) {
 	return a, err
 }
 
+// implements sort.Interface so the links are predictably ordered
+type UrlSlice []*url.URL
+
+func (a UrlSlice) Len() int           { return len(a) }
+func (a UrlSlice) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a UrlSlice) Less(i, j int) bool { return a[i].Path < a[j].Path }
+
 // format a string of the options and their indexes
 func (a *App) LinksString() string {
 	var ret string
@@ -83,7 +90,7 @@ func (a *App) EventLoop() {
 		res := a.ParseCommand(text)
 		fmt.Println("-> " + res)
 		if a.AutoBody {
-			fmt.Println(string(a.LastBody))
+			fmt.Println(a.ShowBody())
 		}
 	}
 }

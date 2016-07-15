@@ -5,6 +5,7 @@ import (
 	"github.com/aktungmak/odata-client"
 	"io/ioutil"
 	"net/url"
+	"sort"
 )
 
 func (a *App) Back() string {
@@ -72,10 +73,11 @@ func (a *App) Goto(method string, u *url.URL, body []byte) string {
 	if u == nil {
 		return "invalid URL"
 	}
-	// update app state and clear old links
+	// update app state and clear old links and body
 	a.History = append(a.History, u)
 	a.Current = u
-	a.Links = make([]*url.URL, 0)
+	a.Links = make(UrlSlice, 0)
+	a.LastBody = []byte{}
 
 	// qualify the url with our service root
 	fullUrl := a.Root.ResolveReference(u)
@@ -84,7 +86,7 @@ func (a *App) Goto(method string, u *url.URL, body []byte) string {
 	res, err := a.Client.DoRaw(method, fullUrl.String(), body)
 	if err != nil {
 		a.LastStatus = "0 ERROR"
-		return err.Error()
+		return "88" + err.Error()
 	}
 	a.LastStatus = res.Status
 
@@ -92,8 +94,7 @@ func (a *App) Goto(method string, u *url.URL, body []byte) string {
 	defer res.Body.Close()
 	a.LastBody, err = ioutil.ReadAll(res.Body)
 	if err != nil {
-		a.LastBody = []byte{}
-		return err.Error()
+		return "96" + err.Error()
 	}
 
 	// parse json response
@@ -105,11 +106,12 @@ func (a *App) Goto(method string, u *url.URL, body []byte) string {
 
 	// extract links - todo should perhaps specify the "Links" key?
 	linkMap := odata.ParseLinks(pBody, "")
-	a.Links = make([]*url.URL, len(linkMap))
+	a.Links = make(UrlSlice, len(linkMap))
 	i := 0
 	for _, v := range linkMap {
 		a.Links[i] = v
 		i++
 	}
+	sort.Sort(a.Links)
 	return res.Status
 }
