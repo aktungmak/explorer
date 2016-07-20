@@ -1,6 +1,7 @@
 package explorer
 
 import (
+	"io/ioutil"
 	"net/url"
 	"strconv"
 	"strings"
@@ -21,6 +22,19 @@ func (a *App) ParseCommand(line string) string {
 			return "need to specify the filename"
 		}
 		return a.Dump(cmds[1])
+	case hp(line, "freq"):
+		if len(cmds) < 3 {
+			return "must specify method, URI and filename"
+		}
+		u, err := url.Parse(cmds[2])
+		if err != nil {
+			return "that's not a valid uri: " + err.Error()
+		}
+		body, err := ioutil.ReadFile(cmds[3])
+		if err != nil {
+			return err.Error()
+		}
+		return a.Goto(cmds[1], u, body)
 	case hp(line, "goto"):
 		if len(cmds) < 2 {
 			return "need to specify the URI to goto"
@@ -39,6 +53,8 @@ func (a *App) ParseCommand(line string) string {
 			return "please specify the name to jump to"
 		}
 		return a.Jump(cmds[1])
+	case hp(line, "last"):
+		return a.LastStatus
 	case hp(line, "opts"):
 		return a.ShowLinks()
 	case hp(line, "mark"):
@@ -46,7 +62,7 @@ func (a *App) ParseCommand(line string) string {
 			return "you must specify a name for the mark"
 		}
 		return a.Mark(cmds[1])
-	case hp(line, "man"):
+	case hp(line, "req"):
 		if len(cmds) < 3 {
 			return "must specify at least method and URI"
 		}
@@ -56,7 +72,7 @@ func (a *App) ParseCommand(line string) string {
 		}
 		body := []byte{}
 		if len(cmds) > 3 {
-			body = []byte(cmds[3])
+			body = []byte(strings.Join(cmds[3:], ""))
 		}
 		return a.Goto(cmds[1], u, body)
 	case hp(line, "save"):

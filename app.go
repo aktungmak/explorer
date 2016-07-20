@@ -64,6 +64,9 @@ func (a UrlSlice) Less(i, j int) bool { return a[i].Path < a[j].Path }
 
 // format a string of the options and their indexes
 func (a *App) LinksString() string {
+	if len(a.Links) == 0 {
+		return "no links in the response\n"
+	}
 	var ret string
 	for i, url := range a.Links {
 		ret += fmt.Sprintf("%d: %s\n", i, url)
@@ -73,7 +76,7 @@ func (a *App) LinksString() string {
 
 func (a *App) EventLoop() {
 	defer a.Reader.Close()
-	a.Goto("GET", a.Current, nil)
+	fmt.Println("-> " + a.Goto("GET", a.Current, nil))
 	for {
 		if a.AutoOpts {
 			fmt.Println(a.LinksString())

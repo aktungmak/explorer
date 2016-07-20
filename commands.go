@@ -94,17 +94,18 @@ func (a *App) Goto(method string, u *url.URL, body []byte) string {
 	defer res.Body.Close()
 	a.LastBody, err = ioutil.ReadAll(res.Body)
 	if err != nil {
-		return err.Error()
+		return res.Status + ": " + err.Error()
 	}
 
 	// parse json response
 	var pBody map[string]interface{}
 	err = json.Unmarshal(a.LastBody, &pBody)
 	if err != nil {
-		return "couldn't parse JSON response: " + err.Error()
+		//return res.Status + ": " + err.Error()
+		return res.Status
 	}
 
-	// extract links - todo should perhaps specify the "Links" key?
+	// extract links
 	linkMap := odata.ParseLinks(pBody, "")
 	a.Links = make(UrlSlice, len(linkMap))
 	i := 0
