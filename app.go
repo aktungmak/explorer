@@ -13,25 +13,25 @@ type App struct {
 	Current    *url.URL
 	History    []*url.URL
 	Marks      map[string]*url.URL
-	Client     *odata.Client
+	Client     *odata.BaClient
 	Links      UrlSlice
 	LastBody   []byte
 	LastStatus string
-	Reader     *readline.Instance
+	Reader     *readline.Instance `json:"-"`
 	AutoOpts   bool
 	AutoBody   bool
+	Insecure   bool
 }
 
-func NewApp(servroot, user, pass string) (*App, error) {
+func NewApp(servroot, user, pass string, insecure bool) (*App, error) {
 	sr, err := url.Parse(servroot)
 	if err != nil {
 		return &App{}, err
 	}
 
-	c, err := odata.NewClient(sr.Host, user, pass)
-	if err != nil {
-		return &App{}, err
-	}
+	// using BA client right now, change to token when needed
+	c := odata.NewBaClient(user, pass, insecure)
+
 	rdr, err := readline.NewEx(&readline.Config{
 		Prompt:       ": ",
 		AutoComplete: __completer,
@@ -43,12 +43,13 @@ func NewApp(servroot, user, pass string) (*App, error) {
 	a := &App{
 		Root:     sr,
 		Current:  sr,
-		History:  make([]*url.URL, 10),
+		History:  make([]*url.URL, 0, 10),
 		Marks:    make(map[string]*url.URL),
 		Client:   c,
 		Reader:   rdr,
 		AutoOpts: true,
 		AutoBody: false,
+		Insecure: insecure,
 	}
 
 	return a, err
@@ -72,7 +73,7 @@ func (a *App) LinksString() string {
 
 func (a *App) EventLoop() {
 	defer a.Reader.Close()
-	a.Goto("GET", a.Root, nil)
+	a.Goto("GET", a.Current, nil)
 	for {
 		if a.AutoOpts {
 			fmt.Println(a.LinksString())

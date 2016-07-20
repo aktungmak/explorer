@@ -59,6 +59,15 @@ func (a *App) ParseCommand(line string) string {
 			body = []byte(cmds[3])
 		}
 		return a.Goto(cmds[1], u, body)
+	case hp(line, "save"):
+		if len(cmds) < 2 {
+			return "need filename to save config in"
+		}
+		err := a.SaveConfig(cmds[1])
+		if err != nil {
+			return "error saving config: " + err.Error()
+		}
+		return "saved config in " + cmds[1]
 	case hp(line, "set"):
 		if len(cmds) < 3 {
 			return "must specify setting and on or off"

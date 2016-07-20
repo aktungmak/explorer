@@ -24,6 +24,8 @@ man <method> <uri> <body>
     send a custom request to <uri> using <method> and optional <body>
 quit
     disconnect and end session
+save <filename>
+	save the current session setup to a file, so it can be resumed later 
 set <body|opts> <on|off>
     enable or disable automatic printing of the options or response body
 where

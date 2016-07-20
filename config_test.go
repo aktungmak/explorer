@@ -1,31 +1,34 @@
 package explorer
 
 import (
-    "testing"
-    "reflect"
-    "net/url"
+	"os"
+	"reflect"
+	"testing"
 )
-const TEST_FILENAME = "__test_conf_file.json"
-func makeMockApp() *App {
-    return &App{
-        Root: url.Parse("https://hostess/rest/v0/")
-        Current: url.Parse("/rest/v0/endpoint")
 
-    }
+const TEST_FILENAME = "__test_conf_file.json"
+
+func makeMockApp() (*App, error) {
+	// c, _ := url.Parse("/rest/v0/endpoint")
+	a, err := NewApp("https://hostess/rest/v0/", "user", "pass", true)
+	return a, err
 }
 
 func TestLoadSave(t *testing.T) {
-    a := makeMockApp()
-    err := a.SaveConfig(TEST_FILENAME)
-    if err != nil { 
-        t.Errorf("error saving config: %s", err)
-    }
-    b, err := LoadConfig(TEST_FILENAME)
-    if err != nil { 
-        t.Errorf("error loading config: %s", err)
-    }
-    if !reflect.DeepEqual(a, b) {
-        t.Error("the loaded and saved configs were different!")
-    }
+	a, err := makeMockApp()
+	if err != nil {
+		t.Errorf("error creating mock app: %s", err)
+	}
+	err = a.SaveConfig(TEST_FILENAME)
+	if err != nil {
+		t.Errorf("error saving config: %s", err)
+	}
+	b, err := LoadConfig(TEST_FILENAME)
+	if err != nil {
+		t.Errorf("error loading config: %s", err)
+	}
+	if !reflect.DeepEqual(a, b) {
+		t.Error("the loaded and saved configs were different!")
+	}
+	os.Remove(TEST_FILENAME)
 }
-

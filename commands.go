@@ -86,7 +86,7 @@ func (a *App) Goto(method string, u *url.URL, body []byte) string {
 	res, err := a.Client.DoRaw(method, fullUrl.String(), body)
 	if err != nil {
 		a.LastStatus = "0 ERROR"
-		return "88" + err.Error()
+		return err.Error()
 	}
 	a.LastStatus = res.Status
 
@@ -94,7 +94,7 @@ func (a *App) Goto(method string, u *url.URL, body []byte) string {
 	defer res.Body.Close()
 	a.LastBody, err = ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "96" + err.Error()
+		return err.Error()
 	}
 
 	// parse json response
