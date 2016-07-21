@@ -2,7 +2,9 @@ package explorer
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/aktungmak/odata-client"
+	"github.com/chzyer/readline"
 	"io/ioutil"
 	"net/url"
 	"sort"
@@ -34,6 +36,9 @@ func (a *App) ShowBody() string {
 }
 func (a *App) Mark(name string) string {
 	a.Marks[name] = a.Current
+	__m_completer.SetChildren(append(__m_completer.GetChildren(),
+		readline.PcItem(name)))
+	fmt.Printf("%v\n", __m_completer.GetChildren())
 	return "Marked current location as " + name
 }
 func (a *App) Jump(name string) string {

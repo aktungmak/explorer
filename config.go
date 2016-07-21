@@ -2,6 +2,7 @@ package explorer
 
 import (
 	"encoding/json"
+	"github.com/chzyer/readline"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -62,6 +63,8 @@ func LoadConfig(filename string) (*App, error) {
 			continue
 		}
 		a.Marks[k] = u
+		__m_completer.SetChildren(append(__m_completer.GetChildren(),
+			readline.PcItem(k)))
 	}
 
 	a.AutoOpts = c.AutoOpts

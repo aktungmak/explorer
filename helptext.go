@@ -21,15 +21,15 @@ home
 jump <name>
     navigate directly to the location saved as <name>
 last
-	print the status line of the last request
+    print the status line of the last request
 mark <name>
     save the current location as <name>
 quit
     disconnect and end session
 req <method> <uri> <body>
-	send a custom request to <uri> using <method> and optional <body>
+    send a custom request to <uri> using <method> and optional <body>
 save <filename>
-	save the current session setup to a file, so it can be resumed later 
+    save the current session setup to a file, so it can be resumed later 
 set <body|opts> <on|off>
     enable or disable automatic printing of the options or response body
 where
