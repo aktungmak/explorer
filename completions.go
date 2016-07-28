@@ -25,6 +25,7 @@ var __completer = readline.NewPrefixCompleter(
 	readline.PcItem("home"),
 	readline.PcItem("last"),
 	readline.PcItem("mark"),
+	readline.PcItem("opts"),
 	readline.PcItem("quit"),
 	readline.PcItem("req",
 		readline.PcItem("DELETE"),
@@ -38,5 +39,6 @@ var __completer = readline.NewPrefixCompleter(
 		readline.PcItem("body", readline.PcItem("on"), readline.PcItem("off")),
 		readline.PcItem("opts", readline.PcItem("on"), readline.PcItem("off")),
 	),
+	readline.PcItem("up"),
 	readline.PcItem("where"),
 )

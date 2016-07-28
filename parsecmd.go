@@ -10,6 +10,9 @@ import (
 // parse the command line and do what is required
 // return a message (error or success) for the user
 func (a *App) ParseCommand(line string) string {
+	if line == "" {
+		return ""
+	}
 	hp := strings.HasPrefix
 	cmds := strings.Split(line, " ")
 	switch {
@@ -89,6 +92,12 @@ func (a *App) ParseCommand(line string) string {
 			return "must specify setting and on or off"
 		}
 		return a.Set(cmds[1], cmds[2])
+	case hp(line, "up"):
+		nu := *a.Current
+		i := strings.LastIndex(nu.Path, "/")
+		nu.Path = nu.Path[:i+1]
+		nu.Path = strings.TrimRight(nu.Path, "/")
+		return a.Goto("GET", &nu, nil)
 	case hp(line, "where"):
 		return a.Root.ResolveReference(a.Current).String()
 	default:

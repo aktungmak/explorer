@@ -24,6 +24,8 @@ last
     print the status line of the last request
 mark <name>
     save the current location as <name>
+opts
+    print a list of the links parsed from the response body
 quit
     disconnect and end session
 req <method> <uri> <body>
@@ -32,6 +34,8 @@ save <filename>
     save the current session setup to a file, so it can be resumed later 
 set <body|opts> <on|off>
     enable or disable automatic printing of the options or response body
+up
+    navigate one path level up, like "cd .." in the shell
 where
     show the current location
 `
