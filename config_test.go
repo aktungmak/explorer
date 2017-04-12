@@ -1,6 +1,8 @@
 package explorer
 
 import (
+	"github.com/aktungmak/odata-client"
+	"net/url"
 	"os"
 	"reflect"
 	"testing"
@@ -9,8 +11,10 @@ import (
 const TEST_FILENAME = "__test_conf_file.json"
 
 func makeMockApp() (*App, error) {
-	// c, _ := url.Parse("/rest/v0/endpoint")
-	a, err := NewApp("https://hostess/rest/v0/", "user", "pass", true)
+	sr, _ := url.Parse("https://hostess/rest/v0/")
+	c := odata.NewBaClient("user", "pass", true)
+	// TODO test other client types
+	a, err := NewApp(sr, c)
 	return a, err
 }
 
@@ -29,6 +33,7 @@ func TestLoadSave(t *testing.T) {
 	}
 	if !reflect.DeepEqual(a, b) {
 		t.Error("the loaded and saved configs were different!")
+	} else {
+		os.Remove(TEST_FILENAME)
 	}
-	os.Remove(TEST_FILENAME)
 }

@@ -2,22 +2,34 @@ package explorer
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/aktungmak/odata-client"
 	"github.com/chzyer/readline"
 	"io/ioutil"
 	"net/url"
 	"os"
 )
 
+// client types
+const (
+	Basic = iota
+	Manual
+	Token
+)
+
 type Config struct {
-	Root     string
-	Current  string
-	History  []string
-	Marks    map[string]string
-	AutoOpts bool
-	AutoBody bool
-	User     string
-	Pass     string
-	Insecure bool
+	Root       string
+	Current    string
+	History    []string
+	Marks      map[string]string
+	AutoOpts   bool
+	AutoBody   bool
+	User       string
+	Pass       string
+	Token      string
+	ClientType int
+	Insecure   bool
 }
 
 func LoadConfig(filename string) (*App, error) {
@@ -25,6 +37,7 @@ func LoadConfig(filename string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	c := &Config{}
 	jsonParser := json.NewDecoder(file)
@@ -33,16 +46,33 @@ func LoadConfig(filename string) (*App, error) {
 		return nil, err
 	}
 
-	a, err := NewApp(c.Root, c.User, c.Pass, c.Insecure)
+	servroot, err := url.Parse(c.Root)
 	if err != nil {
-		return a, err
+		return nil, err
 	}
 
-	a.Root, err = url.Parse(c.Root)
-	if err != nil {
-		return a, err
+	var cl odata.Client
+	// create correct client based on ClientType
+	switch c.ClientType {
+	case Basic:
+		cl = odata.NewBaClient(c.User, c.Pass, c.Insecure)
+	case Manual:
+		cl = odata.NewManualClient(c.Token, c.Insecure)
+	case Token:
+		cl, err = odata.NewTokenClient(servroot.Hostname(), c.User, c.Pass, c.Insecure)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, errors.New("invalid ClientType in config")
 	}
-	a.Current, _ = url.Parse(c.Current)
+
+	a, err := NewApp(servroot, cl)
+	if err != nil {
+		return nil, err
+	}
+
+	a.Current, err = url.Parse(c.Current)
 	if err != nil {
 		a.Current = a.Root
 	}
@@ -91,9 +121,28 @@ func (a *App) SaveConfig(filename string) error {
 	c.AutoOpts = a.AutoOpts
 	c.AutoBody = a.AutoBody
 
-	c.User = a.Client.Username
-	c.Pass = a.Client.Password
-	c.Insecure = a.Insecure
+	// save client based on type
+	switch v := a.Client.(type) {
+	case *odata.BaClient:
+		c.ClientType = Basic
+		c.User = v.Username
+		c.Pass = v.Password
+	case *odata.ManualClient:
+		c.ClientType = Manual
+		c.Token = v.Token
+	case *odata.TokenClient:
+		c.ClientType = Token
+		c.User = v.Username
+		c.Pass = v.Password
+	default:
+		fmt.Printf("client type: %T", v)
+		fmt.Printf("client type: %T", a.Client)
+		return errors.New("app has an unimplemented client type")
+	}
+
+	// TODO work this out
+	// c.Insecure = a.Insecure
+	c.Insecure = true
 
 	b, err := json.Marshal(c)
 	if err != nil {

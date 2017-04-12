@@ -13,43 +13,33 @@ type App struct {
 	Current    *url.URL
 	History    []*url.URL
 	Marks      map[string]*url.URL
-	Client     *odata.BaClient
+	Client     odata.Client
 	Links      UrlSlice
 	LastBody   []byte
 	LastStatus string
 	Reader     *readline.Instance `json:"-"`
 	AutoOpts   bool
 	AutoBody   bool
-	Insecure   bool
 }
 
-func NewApp(servroot, user, pass string, insecure bool) (*App, error) {
-	sr, err := url.Parse(servroot)
-	if err != nil {
-		return &App{}, err
-	}
-
-	// using BA client right now, change to token when needed
-	c := odata.NewBaClient(user, pass, insecure)
-
+func NewApp(servroot *url.URL, client odata.Client) (*App, error) {
 	rdr, err := readline.NewEx(&readline.Config{
 		Prompt:       ": ",
 		AutoComplete: __completer,
 	})
 	if err != nil {
-		return &App{}, err
+		return nil, err
 	}
 
 	a := &App{
-		Root:     sr,
-		Current:  sr,
+		Root:     servroot,
+		Current:  servroot,
 		History:  make([]*url.URL, 0, 10),
 		Marks:    make(map[string]*url.URL),
-		Client:   c,
+		Client:   client,
 		Reader:   rdr,
 		AutoOpts: true,
 		AutoBody: false,
-		Insecure: insecure,
 	}
 
 	return a, err
